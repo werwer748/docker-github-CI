@@ -1,0 +1,37 @@
+name: Deploy Frontend
+
+## 어떤 브랜치에 push 될 때 실행할 것인지
+on:
+  push:
+    branches:
+      - main
+
+## 푸시 이벤트가 발생하면 실행할 작업들
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      ## 도커에 로그인
+      - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      ## 도커 이미지 빌드
+      - run: docker build -t werwer748/react-test -f Dockerfile.dev .
+      ## 빌드한 이미지로 테스트 실행
+      - run: docker run -e CI=true werwer748/react-test npm run test
+
+      ## 버킷으로 올라갈 파일들을 압축
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x "*.git*"
+
+      ## AWS Elastic Beanstalk에 배포
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY}}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY}}
+          application_name: react-docker-gh-test
+          environment_name: React-docker-gh-test-env
+          existing_bucket_name: elasticbeanstalk-ap-northeast-2-441061903841
+          region: ap-northeast-2
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip

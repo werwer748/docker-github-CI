@@ -1,0 +1,16 @@
+## 도커 컴포즈 버전
+version: "3"
+
+## 실행하려는 컨테이너 목록
+services:
+  ## 레디스 컨테이너 명
+  redis-server:
+    ## 해당 컨테이너에서 사용할 이미지
+    image: "redis"
+  ## 어플리케이션 컨테이너 명
+  node-app:
+    ## 해당 컨테이너는 dockerfile을 통해 빌드
+    build: .
+    ## 포트 맵핑
+    ports:
+      - "8080:8080"

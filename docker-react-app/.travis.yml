@@ -1,0 +1,44 @@
+## 관리자 권한 부여
+sudo: required
+
+## 언어 선택
+language: generic
+
+## 도커 환경 구성
+services:
+  - docker
+
+## 스크립트 실행할 수 있는 환경 구성
+before_install:
+  - echo "start creating an image with dockerfile"
+  - docker build -t werwer748/docker-react-app -f Dockerfile.dev .
+
+## 실행할 스크립트(테스트 실행)
+script:
+  - docker run -e CI=true werwer748/docker-react-app npm run test -- --coverage
+
+## 테스트 성공 후 할 일
+after_success:
+  - echo "Test Success"
+
+## 배포 설정
+deploy:
+  ## 외부 서비스 표시(S3, elasticbeanstalk, firebase 등)
+  provider: elasticbeanstalk
+  ## AWS 서비스가 위치한 물리적 장소
+  region: "ap-northeast-2"
+  ## 생성된 어플리케이션 이름
+  app: "getting-started-app"
+  ## elasticbeanstalk 환경 이름
+  env: "Getting-started-app-env"
+  ## elasticbeanstalk 버킷 이름 - s3에서 확인 가능
+  bucket_name: "elasticbeanstalk-ap-northeast-2-007273649137"
+  ## 어플리케이션 이름과 동일
+  bucket_path: "getting-started-app"
+  on:
+    ## 어떤 브랜치에 push 할 때 배포할 것인지
+    branch: main
+  ## AWS IAM에서 생성한 사용자의 Access key
+  access_key_id: $AWS_ACCESS_KEY
+  ## AWS IAM에서 생성한 사용자의 Secret key
+  secret_access_key: $AWS_SECRET_ACCESS_KEY

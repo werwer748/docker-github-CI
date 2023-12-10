@@ -1,0 +1,12 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+## nodemon 사용을 위해서 dev 로 실행
+CMD [ "npm", "run", "dev" ]
